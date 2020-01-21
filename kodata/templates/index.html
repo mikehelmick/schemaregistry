@@ -1,0 +1,19 @@
+<html>
+<head>
+  <title>CloudEvents Schma Registry</title>
+</head>
+
+<body>
+{{if .schemas}}
+  <h1>CloudEvents Schemas</h1>
+  <ul>
+  {{range .schemas}}
+    <li><strong>type:</strong> <a href="/schema/{{.Type}}"><code>{{.Type}}</code></a>
+        <strong>source:</strong> <code>{{.Source}}</code></li>
+  {{end}}
+  </ul>
+{{else}}
+  <p><strong>There are no schemas registered.</strong></p>
+{{end}}
+</body>
+</html>

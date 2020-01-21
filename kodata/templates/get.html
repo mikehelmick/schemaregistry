@@ -1,0 +1,17 @@
+<html>
+<head>
+  <title>Schema {{.schema.Type}}</title>
+</head>
+
+<body>
+  <ul>
+    <li>Source: {{.schema.Source}}></li>
+    <li>Type: {{.schema.Type}}</li>
+    <li><a href="/download/{{.schema.Type}}">download</a></li>
+  </ul>
+  <hr/>
+  <pre>
+  {{.schema.Schema}}
+  </pre>
+</body>
+</html>
