@@ -16,14 +16,21 @@ import (
 )
 
 var koPath string
+var gcpProjectID string
 
 func init() {
 	koPath = os.Getenv("KO_DATA_PATH")
 	if koPath == "" {
 		koPath = "./kodata"
 	}
+	gcpProjectID = os.Getenv("GCP_PROJECT")
+	if gcpProjectID == "" {
+		log.Fatalf("Missing GCP_PROJECT environment variable")
+		panic("Missing GCP_PROJECT environment variable")
+	}
 }
 
+// Publish is the JSON API for publishing a schema
 type Publish struct {
 	Type   string `json:"type"`
 	Source string `json:"source"`
@@ -36,14 +43,13 @@ type EventSchema struct {
 	Type      string         `datastore:"cetype"`
 	Source    string         `datastore:"cesource"`
 	Schema    string         `datastore:"schema,noindex"`
+	Public    bool           `datastore:"public"`
 	K         *datastore.Key `datastore:"__key__"`
 }
 
 func getDatastore() (context.Context, *datastore.Client, error) {
 	ctx := context.Background()
-	projectID := "magic-potions" // os.Getenv("PROJECT")
-
-	client, err := datastore.NewClient(ctx, projectID)
+	client, err := datastore.NewClient(ctx, gcpProjectID)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
@@ -134,7 +140,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		q := datastore.NewQuery("schema").Order("cetype")
 		var schemas []EventSchema
 		if _, err := client.GetAll(ctx, q, &schemas); err == nil {
-			m["schemas"] = schemas
+			pubSchemas := make([]EventSchema, 0)
+			for _, s := range schemas {
+				if s.Public {
+					pubSchemas = append(pubSchemas, s)
+				}
+			}
+			m["schemas"] = pubSchemas
 		} else {
 			log.Fatalf("Query error: %v", err)
 		}
