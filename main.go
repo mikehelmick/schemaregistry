@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/datastore"
@@ -100,9 +101,16 @@ func publishHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func removeDotJson(ceType string) string {
+	if idx := strings.LastIndex(ceType, ".json"); idx > 0 {
+		ceType = ceType[0:idx]
+	}
+	return ceType
+}
+
 func getSchemaHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	ceType := vars["type"]
+	ceType := removeDotJson(vars["type"])
 	m := map[string]interface{}{}
 
 	ctx, client, err := getDatastore()
@@ -160,7 +168,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func downloadSchemaHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	ceType := vars["type"]
+	ceType := removeDotJson(vars["type"])
 
 	ctx, client, err := getDatastore()
 	if err == nil {
